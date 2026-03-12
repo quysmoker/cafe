@@ -1,0 +1,44 @@
+name: cafehehe_pos
+description: "Cafe HeHe POS - Flutter App"
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 🔴 LOCALIZATION (BẮT BUỘC CHO DATEPICKER + TIẾNG VIỆT)
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.0
+
+  # 🔴 STATE MANAGEMENT
+  provider: ^6.1.2
+
+  # 🔴 SUPABASE
+  supabase_flutter: ^2.5.0
+
+  # 🔴 POS / IN BILL
+  esc_pos_printer: ^4.1.0
+  esc_pos_utils: ^1.1.0
+  image: ^3.3.0
+
+  # 🔴 ICON IOS
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/momo_qr.png
