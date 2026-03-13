@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 
 import '../../models/order_item.dart';
 import 'bill_printer.dart';
-import 'last_print_service.dart';
 
 enum PrinterStatus { connected, disconnected, error }
 
@@ -20,25 +19,9 @@ class PrinterResult {
 }
 
 class PrinterService {
-  static bool _printing = false;
-  static final List<Future<void> Function()> _queue = [];
-
-  /// ===============================
-  /// QUEUE PRINT
-  /// ===============================
-  static void _runQueue() async {
-    if (_printing || _queue.isEmpty) return;
-
-    _printing = true;
-    final job = _queue.removeAt(0);
-
-    try {
-      await job();
-    } finally {
-      _printing = false;
-      _runQueue();
-    }
-  }
+  /// IP ANDROID PRINT SERVER
+  static const String _serverIp = "192.168.100.200";
+  static const int _serverPort = 8080;
 
   /// ===============================
   /// PRINT TEMP BILL
@@ -51,36 +34,37 @@ class PrinterService {
     required int orderCount,
     bool isReprint = false,
   }) async {
-    _queue.add(() async {
-      await BillPrinter.printTemp(
-        tableName: tableName,
-        staffName: staffName,
-        items: items,
-        total: total,
-        orderCount: orderCount,
-        isReprint: isReprint,
+    /// WEB -> gửi request sang Android
+    if (kIsWeb) {
+      final url = Uri.parse("http://$_serverIp:$_serverPort/print");
+
+      await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "type": "temp",
+          "tableName": tableName,
+          "staffName": staffName,
+          "orderCount": orderCount,
+          "total": total,
+          "items": items.map((e) => e.toJson()).toList(),
+        }),
       );
 
-      if (!isReprint) {
-        LastPrintService.save(
-          LastPrintData(
-            type: 'temp',
-            tableName: tableName,
-            staffName: staffName,
-            items: items,
-            total: total,
-            orderCount: orderCount,
-          ),
-        );
-      }
-    });
+      return PrinterResult(PrinterStatus.connected, "Đã gửi lệnh in bill tạm");
+    }
 
-    _runQueue();
-
-    return PrinterResult(
-      PrinterStatus.connected,
-      isReprint ? 'Đã in lại bill tạm' : 'Đã in bill tạm #$orderCount',
+    /// ANDROID IN LOCAL
+    await BillPrinter.printTemp(
+      tableName: tableName,
+      staffName: staffName,
+      items: items,
+      total: total,
+      orderCount: orderCount,
+      isReprint: isReprint,
     );
+
+    return PrinterResult(PrinterStatus.connected, "Đã in bill tạm");
   }
 
   /// ===============================
@@ -93,22 +77,23 @@ class PrinterService {
     required int total,
     bool isReprint = false,
   }) async {
-    /// WEB -> GỬI LỆNH IN QUA ANDROID
+    /// WEB -> gửi request sang Android
     if (kIsWeb) {
-      final url = Uri.parse('http://192.168.100.200:8080/print');
+      final url = Uri.parse("http://$_serverIp:$_serverPort/print");
 
       await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          'tableName': tableName,
-          'staffName': staffName,
-          'total': total,
-          'items': items.map((e) => e.toJson()).toList(),
+          "type": "final",
+          "tableName": tableName,
+          "staffName": staffName,
+          "total": total,
+          "items": items.map((e) => e.toJson()).toList(),
         }),
       );
 
-      return PrinterResult(PrinterStatus.connected, 'Đã gửi lệnh in');
+      return PrinterResult(PrinterStatus.connected, "Đã gửi lệnh in bill");
     }
 
     /// ANDROID IN LOCAL
@@ -120,38 +105,63 @@ class PrinterService {
       isReprint: isReprint,
     );
 
-    return PrinterResult(PrinterStatus.connected, 'Đã in bill');
+    return PrinterResult(PrinterStatus.connected, "Đã in bill");
   }
 
   /// ===============================
-  /// PRINT SERVER FOR WEB
+  /// ANDROID PRINT SERVER
   /// ===============================
   static Future<void> startPrintServer() async {
-    final server = await HttpServer.bind(InternetAddress.anyIPv4, 8080);
+    if (kIsWeb) return;
 
-    print('PRINT SERVER RUNNING');
-    print('PORT: 8080');
+    final server = await HttpServer.bind(InternetAddress.anyIPv4, _serverPort);
+
+    print("PRINT SERVER RUNNING");
+    print("PORT: $_serverPort");
 
     await for (HttpRequest request in server) {
-      if (request.method == 'POST' && request.uri.path == '/print') {
-        final content = await utf8.decoder.bind(request).join();
-        final data = jsonDecode(content);
+      if (request.method == "POST" && request.uri.path == "/print") {
+        try {
+          final content = await utf8.decoder.bind(request).join();
+          final data = jsonDecode(content);
 
-        final List<OrderItem> items = (data['items'] as List)
-            .map((e) => OrderItem.fromJson(e))
-            .toList();
+          final List<OrderItem> items = (data["items"] as List)
+              .map((e) => OrderItem.fromJson(e))
+              .toList();
 
-        await printFinalBill(
-          tableName: data['tableName'],
-          staffName: data['staffName'],
-          items: items,
-          total: data['total'],
-        );
+          final type = data["type"];
 
-        request.response
-          ..statusCode = 200
-          ..write('printed')
-          ..close();
+          if (type == "temp") {
+            await BillPrinter.printTemp(
+              tableName: data["tableName"],
+              staffName: data["staffName"],
+              items: items,
+              total: data["total"],
+              orderCount: data["orderCount"] ?? 1,
+            );
+          } else {
+            await BillPrinter.printFinal(
+              tableName: data["tableName"],
+              staffName: data["staffName"],
+              items: items,
+              total: data["total"],
+            );
+          }
+
+          request.response.headers.add("Access-Control-Allow-Origin", "*");
+
+          request.response
+            ..statusCode = 200
+            ..write("printed")
+            ..close();
+        } catch (e) {
+          print("PRINT ERROR: $e");
+
+          request.response
+            ..statusCode = 500
+            ..write("error")
+            ..close();
+        }
       } else {
         request.response
           ..statusCode = 404
