@@ -68,14 +68,14 @@ class MyApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
 
-        home: const RootScreen(),
+        home: const TestPrintScreen(),
       ),
     );
   }
 }
 
-class RootScreen extends StatelessWidget {
-  const RootScreen({super.key});
+class TestPrintScreen extends StatelessWidget {
+  const TestPrintScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
