@@ -20,7 +20,7 @@ class PrinterResult {
 
 class PrinterService {
   /// IP ANDROID PRINT SERVER
-  static const String _serverIp = "192.168.100.188";
+  static const String _serverIp = "192.168.100.200";
   static const int _serverPort = 8080;
 
   /// ===============================

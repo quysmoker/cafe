@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -20,8 +18,7 @@ Future<void> main() async {
 
   await initializeDateFormatting('vi_VN', null);
 
-  /// CHỈ ANDROID MỚI CHẠY PRINT SERVER
-  if (!kIsWeb && Platform.isAndroid) {
+  if (!kIsWeb) {
     PrinterService.startPrintServer();
   }
 

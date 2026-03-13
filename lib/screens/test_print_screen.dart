@@ -13,7 +13,7 @@ class TestPrintScreen extends StatefulWidget {
 class _TestPrintScreenState extends State<TestPrintScreen> {
   String result = "Chưa test";
 
-  final String serverIp = "192.168.100.188";
+  final String serverIp = "192.168.100.200";
 
   Future<void> testConnection() async {
     try {
