@@ -13,9 +13,7 @@ import 'providers/auth_provider.dart';
 import 'providers/order_online_provider.dart';
 import 'providers/product_online_provider.dart';
 import 'providers/table_online_provider.dart';
-import 'screens/admin_home_screen.dart';
-import 'screens/login_screen.dart';
-import 'screens/staff_home_screen.dart';
+import 'screens/test_print_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,21 +72,21 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class TestPrintScreen extends StatelessWidget {
-  const TestPrintScreen({super.key});
+// class RootScreen extends StatelessWidget {
+//   const RootScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
+//   @override
+//   Widget build(BuildContext context) {
+//     final auth = context.watch<AuthProvider>();
 
-    if (!auth.isLogin) {
-      return const LoginScreen();
-    }
+//     if (!auth.isLogin) {
+//       return const LoginScreen();
+//     }
 
-    if (auth.isAdmin) {
-      return const AdminHomeScreen();
-    }
+//     if (auth.isAdmin) {
+//       return const AdminHomeScreen();
+//     }
 
-    return const StaffHomeScreen();
-  }
-}
+//     return const StaffHomeScreen();
+//   }
+// }
