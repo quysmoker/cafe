@@ -31,6 +31,32 @@ class OrderItem {
   }
 
   /// ===============================
+  /// JSON -> OrderItem
+  /// ===============================
+  factory OrderItem.fromJson(Map<String, dynamic> json) {
+    return OrderItem(
+      productId: json['productId'] ?? 0,
+      name: json['name'] ?? '',
+      price: json['price'] ?? 0,
+      quantity: json['quantity'] ?? 0,
+      printedQuantity: json['printedQuantity'] ?? 0,
+    );
+  }
+
+  /// ===============================
+  /// OrderItem -> JSON
+  /// ===============================
+  Map<String, dynamic> toJson() {
+    return {
+      'productId': productId,
+      'name': name,
+      'price': price,
+      'quantity': quantity,
+      'printedQuantity': printedQuantity,
+    };
+  }
+
+  /// ===============================
   /// HELPER
   /// ===============================
 

@@ -1,9 +1,13 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/printer/printer_service.dart';
 import 'providers/admin_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/order_online_provider.dart';
@@ -16,8 +20,12 @@ import 'screens/staff_home_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ BẮT BUỘC: khởi tạo locale VN cho intl
   await initializeDateFormatting('vi_VN', null);
+
+  /// CHỈ ANDROID MỚI CHẠY PRINT SERVER
+  if (!kIsWeb && Platform.isAndroid) {
+    PrinterService.startPrintServer();
+  }
 
   await Supabase.initialize(
     url: 'https://epptwsimdvhlfrwonvwn.supabase.co',

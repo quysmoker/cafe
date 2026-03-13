@@ -31,6 +31,10 @@ dependencies:
   # 🔴 ICON IOS
   cupertino_icons: ^1.0.8
 
+  shelf: ^1.4.1
+  shelf_router: ^1.1.4
+  http: ^1.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
